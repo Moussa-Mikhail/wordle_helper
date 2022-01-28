@@ -13,10 +13,6 @@ wordle_helper.add_result('minty', '32121')
 
 words = wordle_helper.get_candidate_words()
 ```
-After running the above code the variable words will be ['moist', 'motif'].
-
-Tested on https://hellowordl.net/?challenge=bW90aWY.
-
 1st input to add_result is the guess and 2nd input is the result encoded as follows
 
 gray -> 1
@@ -24,3 +20,7 @@ gray -> 1
 yellow -> 2
 
 green -> 3
+
+After running the above code the variable words will be ['moist', 'motif'].
+
+Tested on https://hellowordl.net/?challenge=bW90aWY.
