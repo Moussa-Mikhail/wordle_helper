@@ -13,7 +13,7 @@ wordle_helper.add_result('minty', '32121')
 
 words = wordle_helper.get_candidate_words()
 ```
-After running the above code the list words will be ['moist', 'motif'].
+After running the above code the variable words will be ['moist', 'motif'].
 
 Tested on https://hellowordl.net/?challenge=bW90aWY.
 
