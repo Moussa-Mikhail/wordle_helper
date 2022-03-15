@@ -2,7 +2,7 @@ from enum import IntEnum
 
 def get_words() -> list[str]:
     # Load the file.
-        with open('sgb-words.txt','r') as f:
+        with open('wordle-answers-alphabetical.txt','r') as f:
 
             words = f.read().splitlines()
 
@@ -20,7 +20,7 @@ class WordleHelper():
 
         self.words: list[str] = sorted(get_words())
 
-        # These members represent conditions on the daily word.
+        # These attributes represent constraints on the daily word.
         
         # Letters that are known to be in daily word but whose position is not known.
         # somewhat redundant with self.letters_not_at_pos
@@ -29,7 +29,7 @@ class WordleHelper():
         # Letters that are known not to be in daily word.
         self.letters_not_in_word: set[str] = set()
         
-        # Letters with correct position.
+        # Letters at correct position.
         self.letters_at_pos: dict[int, str] = dict()
 
         # Letters that are known to be in word but not at pos i.
@@ -54,7 +54,7 @@ class WordleHelper():
 
         and result = '32211'
 		
-		updates the list of candidate words
+		updates the constraints
         """
 
         for ltr_pos, res_str in enumerate(result):
@@ -122,8 +122,6 @@ class WordleHelper():
         return [word for word in words if self.does_not_have_letters_at_pos(word)]
     
     def does_not_have_letters_at_pos(self, word: str) -> bool:
-        """Returns True if word[pos] is not in self.letters_not_at_pos[pos] for all pos in range(5)
-        """
 
         return all([word[pos] not in letters for pos, letters in self.letters_not_at_pos.items()])
     
