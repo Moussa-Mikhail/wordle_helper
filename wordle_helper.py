@@ -1,16 +1,19 @@
+"""Given the results of guesses in Wordle, this class
+returns the list of words satisfying the conditions."""
 from enum import IntEnum
 
 
-def get_words() -> list[str]:
-    # Load the file.
-    with open("wordle-answers-alphabetical.txt", "r") as f:
+def get_words_list() -> list[str]:
+    """Returns a list of words from the file wordle-answers-alphabetical.txt."""
 
-        words = f.read().splitlines()
+    with open("wordle-answers-alphabetical.txt", "r", encoding="utf-8") as file:
+
+        words = file.read().splitlines()
 
     return words
 
 
-class ResColor(IntEnum):
+class ResColor(IntEnum):  # pylint: disable=missing-docstring
 
     GRAY = 1
     YELLOW = 2
@@ -18,24 +21,28 @@ class ResColor(IntEnum):
 
 
 class WordleHelper:
+    """Given the results of guesses in Wordle, this class
+    returns the list of words satisfying the conditions."""
+
     def __init__(self):
 
-        self.words: list[str] = sorted(get_words())
+        self._words: list[str] = sorted(get_words_list())
 
         # These attributes represent constraints on the daily word.
 
         # Letters that are known to be in daily word but whose position is not known.
-        # somewhat redundant with self.letters_not_at_pos
-        self.letters_in_word: set[str] = set()
+        # redundant with self._letters_not_at_pos
+        # left in for clarity
+        self._letters_in_word: set[str] = set()
 
         # Letters that are known not to be in daily word.
-        self.letters_not_in_word: set[str] = set()
+        self._letters_not_in_word: set[str] = set()
 
         # Letters at correct position.
-        self.letters_at_pos: dict[int, str] = {}
+        self._letters_at_pos: dict[int, str] = {}
 
         # Letters that are known to be in word but not at pos i.
-        self.letters_not_at_pos: dict[int, set[str]] = {i: set() for i in range(5)}
+        self._letters_not_at_pos: dict[int, set[str]] = {i: set() for i in range(5)}
 
     def add_result(self, guess: str, result: str):
         """guess is the word guessed as a string in lowercase.
@@ -67,97 +74,101 @@ class WordleHelper:
 
             if res_color == ResColor.GRAY:
 
-                """Accounting for duplicate letters.
-                Example: if the daily word is 'wheel'
-                and the guess is 'where' then the 1st 'e'
-                will be green and the 2nd 'e' will be gray.
-                """
-                if letter not in self.letters_in_word:
+                # Accounting for duplicate letters.
+                # Example: if the daily word is 'wheel'
+                # and the guess is 'where' then the 1st 'e'
+                # will be green and the 2nd 'e' will be gray.
 
-                    self.letters_not_in_word.add(letter)
+                if letter not in self._letters_in_word:
+
+                    self._letters_not_in_word.add(letter)
 
             elif res_color == ResColor.YELLOW:
 
-                self.letters_in_word.add(letter)
+                self._letters_in_word.add(letter)
 
-                self.letters_not_at_pos[ltr_pos].add(letter)
+                self._letters_not_at_pos[ltr_pos].add(letter)
 
             elif res_color == ResColor.GREEN:
 
-                if letter in self.letters_not_in_word:
+                # Accounting for duplicate letters. See above.
 
-                    self.letters_not_in_word.remove(letter)
+                if letter in self._letters_not_in_word:
 
-                self.letters_at_pos[ltr_pos] = letter
+                    self._letters_not_in_word.remove(letter)
 
-    def enforce_letters_at_pos(self, words: list[str]) -> list[str]:
+                self._letters_at_pos[ltr_pos] = letter
+
+    def _enforce_letters_at_pos(self):
         """Removes words from list of words that do not have letters at correct positions"""
 
-        return [word for word in words if self.has_letters_at_pos(word)]
+        self._words = [word for word in self._words if self._has_letters_at_pos(word)]
 
-    def has_letters_at_pos(self, word: str) -> bool:
+    def _has_letters_at_pos(self, word: str) -> bool:
 
-        return all(word[pos] == letter for pos, letter in self.letters_at_pos.items())
+        return all(word[pos] == letter for pos, letter in self._letters_at_pos.items())
 
-    def enforce_letters_not_at_pos(self, words: list[str]) -> list[str]:
-        """if word[pos] is in self.letters_not_at_pos[pos] for any pos in range(5)
+    def _enforce_letters_not_at_pos(self):
+        # if word[pos] is in self._letters_not_at_pos[pos] for any pos in range(5)
 
-        then it is not included in returned list of words
+        # then it is not included in returned list of words
 
-        else it is included.
+        # else it is included.
 
-        Examples
+        # Examples
 
-        if self.letters_not_at_pos = {0: {'a'} , 1: {'b', 'c'}} then
+        # if self._letters_not_at_pos = {0: {'a'} , 1: {'b', 'c'}} then
 
-        'apple' would not be included
-        'ebony' would not be included
-        'query' would be included
-        """
-        # TODO: think of a better way to word this.
+        # 'apple' would not be included
+        # 'ebony' would not be included
+        # 'query' would be included
 
-        return [word for word in words if self.does_not_have_letters_at_pos(word)]
+        self._words = [
+            word for word in self._words if self._does_not_have_letters_at_pos(word)
+        ]
 
-    def does_not_have_letters_at_pos(self, word: str) -> bool:
+    def _does_not_have_letters_at_pos(self, word: str) -> bool:
 
         return all(
-            word[pos] not in letters for pos, letters in self.letters_not_at_pos.items()
+            word[pos] not in letters
+            for pos, letters in self._letters_not_at_pos.items()
         )
 
-    def enforce_letters_in_word(self, words: list[str]) -> list[str]:
+    def _enforce_letters_in_word(self):
         """Removes all words from list of words that do not have all letters in daily word"""
 
-        return [word for word in words if self.has_letters_in_word(word)]
+        self._words = [word for word in self._words if self._has_letters_in_word(word)]
 
-    def has_letters_in_word(self, word: str) -> bool:
+    def _has_letters_in_word(self, word: str) -> bool:
 
-        return self.letters_in_word.issubset(set(word))
+        return self._letters_in_word.issubset(set(word))
 
-    def enforce_letters_not_in_word(self, words: list[str]) -> list[str]:
+    def _enforce_letters_not_in_word(self):
         """Removes all words from list of words that have letters known to not be in daily word"""
 
-        return [word for word in words if self.does_not_have_letters(word)]
+        self._words = [
+            word for word in self._words if self._does_not_have_letters(word)
+        ]
 
-    def does_not_have_letters(self, word: str) -> bool:
+    def _does_not_have_letters(self, word: str) -> bool:
 
-        return all(letter not in self.letters_not_in_word for letter in word)
+        return all(letter not in self._letters_not_in_word for letter in word)
 
-    def update_candidate_words(self):
+    def _update_candidate_words(self):
 
-        words: list[str] = self.words
+        self._enforce_letters_at_pos()
 
-        words = self.enforce_letters_at_pos(words)
+        self._enforce_letters_not_at_pos()
 
-        words = self.enforce_letters_not_at_pos(words)
+        self._enforce_letters_not_in_word()
 
-        words = self.enforce_letters_not_in_word(words)
+        self._enforce_letters_in_word()
 
-        words = self.enforce_letters_in_word(words)
+        self._words = sorted(self._words)
 
-        self.words = sorted(words)
+    def get_words(self) -> list[str]:
+        """Returns the list of words satisfying the conditions."""
 
-    def get_candidate_words(self) -> list[str]:
+        self._update_candidate_words()
 
-        self.update_candidate_words()
-
-        return self.words
+        return self._words
