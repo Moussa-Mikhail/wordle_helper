@@ -2,7 +2,7 @@
 Given the results of guesses in Wordle, this class returns the list of words satisfying the conditions. 
 
 ### Usage
-```
+```python
 from wordle_helper import WordleHelper
 
 wordle_helper = WordleHelper()
